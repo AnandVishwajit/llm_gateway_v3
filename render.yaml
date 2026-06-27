@@ -1,0 +1,41 @@
+services:
+  # ─── FastAPI Backend ───────────────────────────────────────────────────────
+  - type: web
+    name: llm-gateway-backend
+    runtime: docker
+    dockerfilePath: ./Dockerfile.backend
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: PORT
+        value: 8000
+      # Secrets — set these in the Render dashboard or via render CLI
+      - key: GROQ_API_KEY
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_KEY
+        sync: false
+      - key: UPSTASH_REDIS_URL
+        sync: false
+      - key: UPSTASH_REDIS_TOKEN
+        sync: false
+      - key: GATEWAY_API_KEY
+        sync: false
+
+  # ─── React/Vite Frontend ──────────────────────────────────────────────────
+  - type: web
+    name: llm-gateway-frontend
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    plan: free
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      # Replace with your actual Render backend URL after first deploy
+      - key: VITE_API_URL
+        value: https://llm-gateway-backend.onrender.com
